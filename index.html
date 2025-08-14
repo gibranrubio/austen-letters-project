@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Austen Letters Project</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: #f8f5f0;
+            color: #2d2d2d;
+            overflow-x: hidden;
+            cursor: none;
+            position: relative;
+        }
+
+        /* High-Quality Paper Background with LIGHTER Botanical Art */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><g opacity="0.15" fill="none" stroke="%23a0845c" stroke-width="2"><path d="M200 400 Q300 300 400 400 Q500 500 600 400"/><circle cx="800" cy="200" r="60"/><path d="M100 600 Q200 550 300 600 Q400 650 500 600"/><ellipse cx="900" cy="600" rx="80" ry="40"/><polygon points="50,150 100,100 150,150 100,200" fill="%23d4c49a" fill-opacity="0.08"/><path d="M1000 300 Q1050 250 1100 300 Q1150 350 1100 400 Q1050 450 1000 400 Q950 350 1000 300"/></g></svg>'),
+                linear-gradient(135deg, #f8f5f0 0%, #f4f0e8 25%, #f6f2ea 50%, #f2ede5 75%, #f0ebe0 100%);
+            
+            background-size: 800px 600px, 100% 100%;
+            background-position: center center, center center;
+            background-repeat: no-repeat, no-repeat;
+            pointer-events: none;
+            z-index: -2;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000"><g opacity="0.1" fill="none" stroke="%23c9a96e" stroke-width="1.5"><path d="M300 200 Q400 150 500 200 Q600 250 700 200"/><circle cx="1200" cy="300" r="80" fill="%23d4c49a" fill-opacity="0.05"/><polygon points="100,700 180,650 200,730 120,780" fill="%23e8dcc0" fill-opacity="0.06"/><path d="M1300 100 Q1400 80 1500 100 Q1600 120 1500 140 Q1400 160 1300 140 Q1200 120 1300 100"/><ellipse cx="800" cy="800" rx="120" ry="60"/></g></svg>');
+            
+            background-size: 1000px 800px;
+            background-position: 20% 30%;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #8b4513;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: multiply;
+            transition: transform 0.1s ease;
+        }
+
+        .hero {
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 2;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 8rem);
+            font-weight: 300;
+            letter-spacing: 0.02em;
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeInUp 2s ease forwards;
+            background: linear-gradient(135deg, #8b4513 0%, #d2691e 50%, #8b4513 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            opacity: 0;
+            animation: fadeInUp 2s ease 0.5s forwards;
+            margin-bottom: 3rem;
+            color: #5d4e37;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            animation: fadeInUp 2s ease 1s forwards;
+        }
+
+        .scroll-text {
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            color: #8b4513;
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 60px;
+            background: linear-gradient(to bottom, #8b4513, transparent);
+            margin: 0 auto;
+            animation: scrollPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scrollPulse {
+            0%, 100% { opacity: 1; height: 60px; }
+            50% { opacity: 0.3; height: 30px; }
+        }
+
+        .section {
+            min-height: 100vh;
+            padding: 8rem 2rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+        }
+
+        .section-content {
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .text-content {
+            background: rgba(248, 245, 240, 0.85);
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(139, 69, 19, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(139, 69, 19, 0.1);
+        }
+
+        .text-content h2 {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 300;
+            letter-spacing: 0.02em;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .text-content p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            color: #2d2d2d;
+            opacity: 1;
+        }
+
+        .text-content em {
+            color: #8b4513;
+            font-style: italic;
+        }
+
+        .visual-content {
+            position: relative;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .letter-container {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            perspective: 1000px;
+        }
+
+        .letter {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #fefcf7 0%, #f8f5f0 100%);
+            border-radius: 8px;
+            box-shadow: 
+                0 10px 30px rgba(139, 69, 19, 0.15),
+                0 0 50px rgba(139, 69, 19, 0.05),
+                inset 0 1px 2px rgba(255, 255, 255, 0.8);
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(139, 69, 19, 0.1);
+        }
+
+        .letter:hover {
+            transform: rotateY(15deg) rotateX(5deg) scale(1.05);
+        }
+
+        .letter::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><path d="M40 60 L360 60" stroke="%23333" stroke-width="1" opacity="0.3"/><path d="M40 100 L360 100" stroke="%23333" stroke-width="1" opacity="0.3"/><path d="M40 140 L280 140" stroke="%23333" stroke-width="1" opacity="0.3"/><path d="M40 180 L340 180" stroke="%23333" stroke-width="1" opacity="0.3"/><path d="M40 220 L200 220" stroke="%23333" stroke-width="1" opacity="0.3"/></svg>');
+            opacity: 0.6;
+        }
+
+        .wax-seal {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #8b0000 0%, #660000 100%);
+            border-radius: 50%;
+            box-shadow: 
+                inset 0 2px 8px rgba(0, 0, 0, 0.3),
+                0 4px 12px rgba(139, 0, 0, 0.4);
+        }
+
+        .wax-seal::after {
+            content: 'JA';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #f4e4bc;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .cut-out-section {
+            position: absolute;
+            top: 150px;
+            left: 40px;
+            right: 80px;
+            height: 20px;
+            background: #1a1a1a;
+            border: 2px dashed #8b4513;
+            opacity: 0.6;
+            animation: cutOutPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes cutOutPulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 0.3; }
+        }
+
+        /* World Map */
+        .world-map {
+            position: relative;
+            width: 400px;
+            height: 250px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250"><path d="M50 120 Q100 80 150 120 T250 100 Q300 90 350 120" stroke="%23c9a96e" stroke-width="2" fill="none" opacity="0.3"/><path d="M80 140 Q120 130 160 140 Q200 135 240 140" stroke="%23c9a96e" stroke-width="1" fill="none" opacity="0.2"/></svg>');
+            margin: 0 auto;
+            border-radius: 15px;
+            overflow: hidden;
+            background-color: rgba(201, 169, 110, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(139, 69, 19, 0.2);
+        }
+
+        .map-dots {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .dot {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle, #8b4513 0%, #d2691e 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 25px rgba(139, 69, 19, 0.8);
+            animation: pulse 2s infinite;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dot:hover {
+            transform: scale(2);
+            box-shadow: 0 0 40px rgba(139, 69, 19, 1);
+        }
+
+        .dot::after {
+            content: attr(data-location);
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(139, 69, 19, 0.95);
+            color: #fefcf7;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .dot:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-5px);
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+            50% { 
+                opacity: 0.6; 
+                transform: scale(1.3); 
+            }
+        }
+
+        /* Portrait Frame */
+        .portrait-frame {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #8B4513 0%, #D2691E 50%, #8B4513 100%);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.5),
+                inset 0 2px 5px rgba(255, 255, 255, 0.1);
+            animation: frameGlow 4s ease-in-out infinite;
+        }
+
+        .portrait {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f4e4bc 0%, #e8dcc0 50%, #d4c49a 100%);
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portrait::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 60px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300"><ellipse cx="100" cy="80" rx="40" ry="50" fill="%23d4c49a" opacity="0.6"/><path d="M80 70 Q100 50 120 70" stroke="%23333" stroke-width="2" fill="none" opacity="0.4"/><circle cx="90" cy="75" r="3" fill="%23333" opacity="0.5"/><circle cx="110" cy="75" r="3" fill="%23333" opacity="0.5"/><path d="M95 85 Q100 90 105 85" stroke="%23333" stroke-width="2" fill="none" opacity="0.4"/><path d="M70 120 Q100 100 130 120 Q100 140 70 120" fill="%238B4513" opacity="0.3"/></svg>');
+            opacity: 0.7;
+            animation: portraitBreathe 6s ease-in-out infinite;
+        }
+
+        .painting-signature {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-family: cursive;
+            font-size: 14px;
+            color: #8B4513;
+            opacity: 0.8;
+            font-style: italic;
+            animation: signatureGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes frameGlow {
+            0%, 100% { box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 2px 5px rgba(255, 255, 255, 0.1); }
+            50% { box-shadow: 0 20px 40px rgba(139, 69, 19, 0.3), inset 0 2px 5px rgba(255, 255, 255, 0.2); }
+        }
+
+        @keyframes portraitBreathe {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.02); }
+        }
+
+        @keyframes signatureGlow {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* Cramped letter */
+        .cramped-letter {
+            position: relative;
+            width: 280px;
+            height: 380px;
+            background: linear-gradient(135deg, #f4e4bc 0%, #e8dcc0 100%);
+            border-radius: 8px;
+            padding: 30px 20px;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                0 0 50px rgba(139, 69, 19, 0.1);
+            margin: 0 auto;
+            animation: letterFloat 4s ease-in-out infinite;
+        }
+
+        .letter-lines {
+            position: relative;
+            height: 280px;
+        }
+
+        .line {
+            height: 2px;
+            background: linear-gradient(to right, #333 0%, #333 80%, transparent 100%);
+            opacity: 0.6;
+            margin-bottom: 8px;
+            animation: writeText 6s ease-in-out infinite;
+        }
+
+        .line:nth-child(1) { animation-delay: 0s; width: 85%; }
+        .line:nth-child(2) { animation-delay: 0.3s; width: 92%; }
+        .line:nth-child(3) { animation-delay: 0.6s; width: 88%; }
+        .line:nth-child(4) { animation-delay: 0.9s; width: 90%; }
+        .line:nth-child(5) { animation-delay: 1.2s; width: 85%; margin-bottom: 6px; }
+        .line:nth-child(6) { animation-delay: 1.5s; width: 92%; margin-bottom: 5px; }
+        .line:nth-child(7) { animation-delay: 1.8s; width: 87%; margin-bottom: 4px; }
+        .line:nth-child(8) { animation-delay: 2.1s; width: 89%; margin-bottom: 3px; }
+
+        @keyframes writeText {
+            0% { width: 0; opacity: 0; }
+            20% { opacity: 0.6; }
+            100% { opacity: 0.6; }
+        }
+
+        @keyframes letterFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(1deg); }
+        }
+
+        .postage-note {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 10px;
+            color: #8b4513;
+            font-style: italic;
+            opacity: 0.8;
+            animation: noteFlicker 2s ease-in-out infinite;
+        }
+
+        @keyframes noteFlicker {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        /* Mailbox Scene */
+        .mailbox-scene {
+            position: relative;
+            width: 300px;
+            height: 250px;
+            margin: 0 auto;
+        }
+
+        .letterbox {
+            position: relative;
+            width: 200px;
+            height: 150px;
+            background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+            border-radius: 15px 15px 0 0;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .letterbox-slot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 8px;
+            background: #000;
+            border-radius: 4px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8);
+        }
+
+        .letter-delivery {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: deliverLetter 5s ease-in-out infinite;
+        }
+
+        .envelope {
+            width: 80px;
+            height: 50px;
+            background: linear-gradient(135deg, #f4e4bc 0%, #e8dcc0 100%);
+            border-radius: 3px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .envelope::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 25px;
+            background: linear-gradient(135deg, #d4c49a 0%, #c9a96e 100%);
+            clip-path: polygon(0 0, 50% 70%, 100% 0);
+        }
+
+        .envelope-seal {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(circle, #8b0000 0%, #660000 100%);
+            border-radius: 50%;
+        }
+
+        @keyframes deliverLetter {
+            0%, 100% { 
+                transform: translateX(-50%) translateY(-20px); 
+                opacity: 0; 
+            }
+            15% { 
+                transform: translateX(-50%) translateY(-10px); 
+                opacity: 1; 
+            }
+            50% { 
+                transform: translateX(-50%) translateY(20px); 
+                opacity: 1; 
+            }
+            65% { 
+                transform: translateX(-50%) translateY(30px); 
+                opacity: 0.5; 
+            }
+            80% {
+                transform: translateX(-50%) translateY(35px); 
+                opacity: 0;
+            }
+        }
+
+        .delivery-text {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            color: #8b4513;
+            font-style: italic;
+            text-align: center;
+            animation: textPulse 5s ease-in-out infinite;
+        }
+
+        @keyframes textPulse {
+            0%, 100% { opacity: 0.8; transform: translateX(-50%) scale(1); }
+            50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+        }
+
+        /* Subscription Box */
+        .subscription-box {
+            position: relative;
+            width: 280px;
+            height: 200px;
+            margin: 0 auto;
+            perspective: 1000px;
+        }
+
+        .box-lid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%);
+            border-radius: 8px 8px 0 0;
+            transform-origin: top center;
+            animation: openBox 8s ease-in-out infinite;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .box-contents {
+            position: absolute;
+            top: 40px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #f4e4bc 0%, #e8dcc0 100%);
+            border-radius: 0 0 8px 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .letter-item, .artwork-item, .context-item, .surprise-item {
+            height: 20px;
+            border-radius: 4px;
+            opacity: 0;
+            animation: revealItems 8s ease-in-out infinite;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            color: #2d2d2d;
+            font-weight: 500;
+            transform: translateY(20px);
+        }
+
+        .letter-item {
+            background: linear-gradient(135deg, #f8f5f0 0%, #f0e8d8 100%);
+            animation-delay: 2s;
+        }
+
+        .artwork-item {
+            background: linear-gradient(135deg, #e8dcc0 0%, #d4c49a 100%);
+            animation-delay: 2.5s;
+        }
+
+        .context-item {
+            background: linear-gradient(135deg, #d4c49a 0%, #c9a96e 100%);
+            animation-delay: 3s;
+        }
+
+        .surprise-item {
+            background: linear-gradient(135deg, #c9a96e 0%, #b8956a 100%);
+            animation-delay: 3.5s;
+        }
+
+        @keyframes openBox {
+            0%, 15% { transform: rotateX(0deg); }
+            25%, 75% { transform: rotateX(-120deg); }
+            85%, 100% { transform: rotateX(0deg); }
+        }
+
+        @keyframes revealItems {
+            0%, 20% { opacity: 0; transform: translateY(20px) scale(0.8); }
+            30%, 70% { opacity: 1; transform: translateY(0) scale(1); }
+            80%, 100% { opacity: 0; transform: translateY(20px) scale(0.8); }
+        }
+
+        /* Hands Holding Letter */
+        .hands-holding-letter {
+            position: relative;
+            width: 300px;
+            height: 250px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hands {
+            position: relative;
+            width: 200px;
+            height: 150px;
+        }
+
+        .hand {
+            position: absolute;
+            width: 60px;
+            height: 80px;
+            background: linear-gradient(135deg, #d4a574 0%, #c9956a 100%);
+            border-radius: 30px 30px 15px 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .left-hand {
+            left: 20px;
+            bottom: 20px;
+            transform: rotate(-15deg);
+            animation: holdGentle 4s ease-in-out infinite;
+        }
+
+        .right-hand {
+            right: 20px;
+            bottom: 20px;
+            transform: rotate(15deg);
+            animation: holdGentle 4s ease-in-out infinite 0.5s;
+        }
+
+        .held-letter {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 80px;
+            background: linear-gradient(135deg, #f4e4bc 0%, #e8dcc0 100%);
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            animation: letterFloat2 4s ease-in-out infinite;
+        }
+
+        .letter-text-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .text-line {
+            height: 2px;
+            background: linear-gradient(to right, #333 0%, #333 70%, transparent 100%);
+            opacity: 0.6;
+            animation: textWrite 3s ease-in-out infinite;
+        }
+
+        .text-line:nth-child(1) { width: 90%; animation-delay: 0s; }
+        .text-line:nth-child(2) { width: 85%; animation-delay: 0.5s; }
+        .text-line.short { width: 60%; animation-delay: 1s; }
+
+        @keyframes holdGentle {
+            0%, 100% { transform: rotate(-15deg) translateY(0px); }
+            50% { transform: rotate(-12deg) translateY(-5px); }
+        }
+
+        @keyframes letterFloat2 {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
+            50% { transform: translate(-50%, -50%) translateY(-8px); }
+        }
+
+        @keyframes textWrite {
+            0% { width: 0; }
+            70%, 100% { width: 90%; }
+        }
+
+        .sound-toggle {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(139, 69, 19, 0.3);
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            color: #8b4513;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(139, 69, 19, 0.1);
+        }
+
+        .sound-toggle:hover {
+            background: rgba(139, 69, 19, 0.1);
+            transform: scale(1.05);
+        }
+
+        .cta-section {
+            background: 
+                radial-gradient(ellipse at center, rgba(139, 69, 19, 0.05) 0%, transparent 70%),
+                transparent;
+            text-align: center;
+        }
+
+        .cta-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 300;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .email-form {
+            display: flex;
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50px;
+            padding: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(139, 69, 19, 0.2);
+            box-shadow: 0 5px 20px rgba(139, 69, 19, 0.1);
+        }
+
+        .email-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 1rem 1.5rem;
+            color: #3d3d3d;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .email-input::placeholder {
+            color: rgba(61, 61, 61, 0.6);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            color: #fefcf7;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(139, 69, 19, 0.2);
+        }
+
+        .submit-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(139, 69, 19, 0.3);
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .section-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                text-align: center;
+            }
+            
+            .section {
+                padding: 4rem 1rem;
+            }
+            
+            .email-form {
+                flex-direction: column;
+                max-width: 300px;
+                gap: 0.5rem;
+            }
+
+            .world-map, .portrait-frame, .cramped-letter, .mailbox-scene, .subscription-box, .hands-holding-letter {
+                transform: scale(0.8);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cursor"></div>
+    
+    <div class="sound-toggle" onclick="toggleSound()">
+        🔊 Sound: ON
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>The Untold Story</h1>
+            <p class="hero-subtitle">Jane Austen's Letters, Recreated Exactly</p>
+        </div>
+        <div class="scroll-indicator">
+            <div class="scroll-text">Discover</div>
+            <div class="scroll-line"></div>
+        </div>
+    </section>
+
+    <!-- Section 1 -->
+    <section class="section">
+        <div class="section-content fade-in">
+            <div class="text-content">
+                <h2>What if you could hold history?</h2>
+                <p><em>"What dreadful hot weather we have. It keeps one in a continual state of inelegance."</em> —Jane's earliest surviving letter</p>
+                <p>For 200 years, we've read Jane Austen's words. But we've never truly <em>seen</em> her letters—the careful folds, the wax seals, the sentences cut out by Cassandra to protect family secrets.</p>
+                <p>Each letter tells two stories: the words she wrote, and the world she lived in.</p>
+            </div>
+            <div class="visual-content">
+                <div class="letter-container">
+                    <div class="letter">
+                        <div class="wax-seal"></div>
+                        <div class="cut-out-section"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2 -->
+    <section class="section">
+        <div class="section-content fade-in">
+            <div class="text-content">
+                <h2>A World First</h2>
+                <p>In over two centuries since Jane's death, <em>no one</em> has ever attempted to compile and showcase <strong>all</strong> of her surviving letters in their complete physical form.</p>
+                <p>Scholars have transcribed. Museums have preserved fragments. But the full story—scattered across institutions worldwide—has never been told as one complete correspondence.</p>
+                <p>Until now.</p>
+            </div>
+            <div class="visual-content">
+                <div class="world-map">
+                    <div class="map-dots">
+                        <div class="dot" style="top: 20%; left: 15%;" data-location="Morgan Library, NY"></div>
+                        <div class="dot" style="top: 30%; left: 50%;" data-location="British Library, London"></div>
+                        <div class="dot" style="top: 40%; left: 52%;" data-location="Jane Austen House, Hampshire"></div>
+                        <div class="dot" style="top: 35%; left: 48%;" data-location="Bodleian Library, Oxford"></div>
+                        <div class="dot" style="top: 60%; left: 70%;" data-location="Private Collections"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3 -->
+    <section class="section">
+        <div class="section-content fade-in">
+            <div class="visual-content">
+                <div class="portrait-frame">
+                    <div class="portrait">
+                        <div class="painting-signature">C. Austen</div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-content">
+                <h2>Through Cassandra's Eyes</h2>
+                <p>Jane's beloved sister Cassandra wasn't just her closest confidant—she was a talented artist whose watercolors and sketches capture the world Jane inhabited.</p>
+                <p>Each letter comes with Cassandra's artwork from the period, showing you the faces, places, and moments that shaped Jane's words.</p>
+                <p><em>"I have lost a treasure, such a sister, such a friend as never can have been surpassed."</em> —Cassandra on Jane's death</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4 -->
+    <section class="section">
+        <div class="section-content fade-in">
+            <div class="text-content">
+                <h2>A Father's Faith</h2>
+                <p>Reverend George Austen didn't just encourage Jane's writing—he actively championed it. In 1797, he wrote to publisher Thomas Cadell:</p>
+                <p style="font-style: italic; padding: 1.5rem; background: rgba(139, 69, 19, 0.1); border-left: 4px solid #8b4513; margin: 1.5rem 0; border-radius: 0 8px 8px 0;"><em>"Sir, I have in my possession a manuscript novel, comprising 3 vols., about the length of Miss Burney's Evelina..."</em></p>
+                <p>This was unheard of—a father promoting his daughter's literary ambitions when women barely had publishing rights.</p>
+            </div>
+            <div class="visual-content">
+                <div class="letter-container">
+                    <div class="letter" style="background: linear-gradient(135deg, #f8f5f0 0%, #f0e8d8 100%);">
+                        <div class="wax-seal"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5 -->
+    <section class="section">
+        <div class="section-content fade-in">
+            <div class="visual-content">
+                <div class="cramped-letter">
+                    <div class="letter-lines">
+                        <div class="line"></div>
+                        <div class="line"></div>
+                        <div class="line"></div>
+                        <div class="line"></div>
+                        <div class="line"></div>
+                        <div class="line"></div>
+                        <div class="line"></div>
+                        <div class="line"></div>
+                    </div>
+                    <div class="postage-note">Single sheet = less cost</div>
+                </div>
+            </div>
+            <div class="text-content">
+                <h2>The True Art of Letter Writing</h2>
+                <p>Jane claimed she had "attained the true art of letter writing, which is to say on paper exactly what you would say to a person by word of mouth." Her letters read breathlessly—<em>"I've been talking to you as fast as I could the whole of this letter."</em></p>
+                <p>But there's genius in the cramped handwriting. Postage was paid by the recipient and charged by sheets and distance. Neither sister had money to spare, so Jane packed entire conversations onto single pages to save Cassandra from extra charges.</p>
+                <p>When you see two sheets? Jane had found free postage or hand delivery.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 6 -->
+    <section class="section">
+        <div class="section-content fade-in">
+            <div class="text-content">
+                <h2>What Cassandra Hid</h2>
+                <p>After Jane's death, Cassandra carefully preserved her sister's letters—while protecting family secrets. You can see where she cut out single sentences, likely removing unkind remarks about relatives or details about Jane's health that felt "too personal for later generations."</p>
+                <p>But Cassandra's most heartbreaking letter remains intact. Written after Jane's death at 41: <em>"She was the sun of my life, the gilder of every pleasure, the soother of every sorrow. I had not a thought concealed from her... it is as if I lost a part of myself."</em></p>
+                <p>Each subscription reveals these hidden stories—what survived, what was cut away, and why.</p>
+            </div>
+            <div class="visual-content">
+                <div class="letter-container">
+                    <div class="letter">
+                        <div class="wax-seal"></div>
+                        <div class="cut-out-section"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 7 -->
+    <section class="section" style="background: radial-gradient(ellipse at center, rgba(139, 69, 19, 0.03) 0%, transparent 70%);">
+        <div class="section-content fade-in">
+            <div class="text-content">
+                <h2>As Jane Intended</h2>
+                <p>There's something your phone screen can't replicate. The weight of paper in your hands. The anticipation as you unfold each crease. The intimacy of holding something meant for one person's eyes.</p>
+                <p>Jane wrote these letters to be <em>held</em>, not scrolled through. To be unfolded slowly, savored, and kept close. Each month, you'll receive her correspondence exactly as Cassandra did—by hand, through your letterbox, waiting to be discovered.</p>
+                <p><strong>Because some experiences can't be digitized.</strong></p>
+            </div>
+            <div class="visual-content">
+                <div class="mailbox-scene">
+                    <div class="letterbox">
+                        <div class="letterbox-slot"></div>
+                        <div class="letter-delivery">
+                            <div class="envelope">
+                                <div class="envelope-seal"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="delivery-text">Delivered monthly to your door</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 8 -->
+    <section class="section">
+        <div class="section-content fade-in">
+            <div class="visual-content">
+                <div class="subscription-box">
+                    <div class="box-lid"></div>
+                    <div class="box-contents">
+                        <div class="letter-item">The Letter</div>
+                        <div class="artwork-item">Cassandra's Art</div>
+                        <div class="context-item">Historical Context</div>
+                        <div class="surprise-item">Monthly Surprise</div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-content">
+                <h2>Your Monthly Correspondence</h2>
+                <p>Each delivery contains:</p>
+                <ul style="list-style: none; padding: 0; margin: 2rem 0;">
+                    <li style="padding: 1rem 0 1rem 2rem; border-bottom: 1px solid rgba(139, 69, 19, 0.2); position: relative;"><span style="position: absolute; left: 0; color: #8b4513; font-size: 1.2rem;">✉</span><strong>The Letter</strong> — Recreated with period-accurate paper, ink, and folding</li>
+                    <li style="padding: 1rem 0 1rem 2rem; border-bottom: 1px solid rgba(139, 69, 19, 0.2); position: relative;"><span style="position: absolute; left: 0; color: #8b4513; font-size: 1.2rem;">🎨</span><strong>Cassandra's Artwork</strong> — High-quality prints of her paintings from the period</li>
+                    <li style="padding: 1rem 0 1rem 2rem; border-bottom: 1px solid rgba(139, 69, 19, 0.2); position: relative;"><span style="position: absolute; left: 0; color: #8b4513; font-size: 1.2rem;">📜</span><strong>Historical Context</strong> — What was happening in Jane's life, society, and the world</li>
+                    <li style="padding: 1rem 0 1rem 2rem; border-bottom: 1px solid rgba(139, 69, 19, 0.2); position: relative;"><span style="position: absolute; left: 0; color: #8b4513; font-size: 1.2rem;">🔍</span><strong>Hidden Stories</strong> — The secrets behind each letter's creation and meaning</li>
+                    <li style="padding: 1rem 0 1rem 2rem; position: relative;"><span style="position: absolute; left: 0; color: #8b4513; font-size: 1.2rem;">🎁</span><strong>A Surprise</strong> — Period-appropriate extras like sealing wax, pressed flowers, or historical artifacts</li>
+                </ul>
+                <p>It's not just mail. It's time travel in an envelope.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 9 -->
+    <section class="section">
+        <div class="section-content fade-in">
+            <div class="text-content">
+                <h2>History in Your Hands</h2>
+                <p>In 1817, Cassandra held Jane's final letter, not knowing it would be the last. The paper was real. The ink was wet. The emotion was immediate.</p>
+                <p>Digital screens create distance. Physical letters create connection. When you unfold Jane's recreated correspondence, you're not just reading history—you're touching it, feeling the weight of her words the way they were meant to be experienced.</p>
+                <p><em>Some things are worth waiting for. Some experiences can't be rushed. Some stories deserve to be held.</em></p>
+            </div>
+            <div class="visual-content">
+                <div class="hands-holding-letter">
+                    <div class="hands">
+                        <div class="hand left-hand"></div>
+                        <div class="hand right-hand"></div>
+                    </div>
+                    <div class="held-letter">
+                        <div class="letter-text-lines">
+                            <div class="text-line"></div>
+                            <div class="text-line"></div>
+                            <div class="text-line short"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section section">
+        <div class="cta-content fade-in">
+            <h2 class="cta-title">Join the Correspondence</h2>
+            <p style="margin-bottom: 3rem; font-size: 1.3rem; opacity: 0.8;">Be the first to receive Jane's letters as she wrote them.</p>
+            
+            <form class="email-form" onsubmit="handleSubmit(event)">
+                <input type="email" class="email-input" placeholder="your@email.com" required>
+                <button type="submit" class="submit-btn">Subscribe</button>
+            </form>
+        </div>
+    </section>
+
+    <script>
+        const cursor = document.querySelector('.cursor');
+        let mouseX = 0;
+        let mouseY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            cursor.style.left = mouseX + 'px';
+            cursor.style.top = mouseY + 'px';
+        });
+
+        let soundEnabled = true;
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const toggle = document.querySelector('.sound-toggle');
+            if (soundEnabled) {
+                toggle.innerHTML = '🔊 Sound: ON';
+            } else {
+                toggle.innerHTML = '🔇 Sound: OFF';
+            }
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+            const email = event.target.querySelector('.email-input').value;
+            
+            const btn = event.target.querySelector('.submit-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Subscribed!';
+            btn.style.background = 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)';
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = 'linear-gradient(135deg, #8b4513 0%, #d2691e 100%)';
+                event.target.reset();
+            }, 2000);
+
+            console.log('Email submitted:', email);
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
